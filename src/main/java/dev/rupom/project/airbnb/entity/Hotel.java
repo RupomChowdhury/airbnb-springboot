@@ -42,5 +42,7 @@ public class Hotel {
     private ContactInfo contactInfo;
 
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Room> room = new ArrayList<>();
+    private List<Room> rooms = new ArrayList<>();
+    @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
+    private List<Inventory> inventories = new ArrayList<>();
 }
