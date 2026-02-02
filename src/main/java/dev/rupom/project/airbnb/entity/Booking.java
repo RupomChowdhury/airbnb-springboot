@@ -1,5 +1,6 @@
 package dev.rupom.project.airbnb.entity;
 
+import dev.rupom.project.airbnb.entity.enums.BookingStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -25,15 +27,24 @@ public class Booking {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-    private Boolean status;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private BookingStatus status; //maybe we should use enum
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name ="booking_guest",
+            joinColumns = @JoinColumn(name = "booking_id"),
+            inverseJoinColumns = @JoinColumn(name = "guest_id")
+    )
+    private Set<Guest> guests;
+    @Column(nullable = false)
     private Integer roomsCount;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
-    @OneToOne
-    @JoinColumn(name = "payment_id",nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id")
     private Payment payment;
     @Column(updatable = false)
     @CreationTimestamp

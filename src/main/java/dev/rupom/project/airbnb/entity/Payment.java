@@ -1,5 +1,6 @@
 package dev.rupom.project.airbnb.entity;
 
+import dev.rupom.project.airbnb.entity.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,12 +24,13 @@ public class Payment {
     private Long id;
     @Column(nullable = false, unique = true)
     private String transactionId;
-    @Column(nullable = false)
+    @Column(nullable = false, scale = 10,precision = 2)
     private BigDecimal price;
     @OneToOne(mappedBy = "payment")
     private Booking booking;
     @Column(nullable = false)
-    private Boolean status;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status;
     @Column(updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
