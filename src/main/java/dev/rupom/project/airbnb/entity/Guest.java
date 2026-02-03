@@ -26,7 +26,5 @@ public class Guest {
     private String name;
     @Enumerated(EnumType.STRING)
     private Gender gender;
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "guests")
-    private Set<Booking> bookings;
     private LocalDateTime createdAt;
 }
