@@ -19,6 +19,9 @@ public class Hotel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true,nullable = false)
+    private String name;
+
     @Column(nullable = false)
     private String city;
 
@@ -44,4 +47,7 @@ public class Hotel {
     private List<Room> rooms = new ArrayList<>();
     @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
     private List<Inventory> inventories = new ArrayList<>();
+
+    @ManyToOne
+    private User owner;
 }
