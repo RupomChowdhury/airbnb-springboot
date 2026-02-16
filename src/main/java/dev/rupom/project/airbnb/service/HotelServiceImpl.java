@@ -10,9 +10,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ReflectionUtils;
+import tools.jackson.databind.ObjectMapper;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +21,8 @@ import java.util.Map;
 public class HotelServiceImpl implements  HotelService {
     private final HotelRepository hotelRepository;
     private final HotelMapper mapper;
-    private final String HotelNotFound = "Hotel not found.";
+    private final ObjectMapper objectMapper;
+    private static final String HOTEL_NOT_FOUND = "Hotel not found.";
 
     @Transactional
     @Override
@@ -38,7 +38,7 @@ public class HotelServiceImpl implements  HotelService {
         log.info("Getting hotel with id: {}",id);
         Hotel hotel = hotelRepository
                 .findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException(HotelNotFound));
+                .orElseThrow(()-> new ResourceNotFoundException(HOTEL_NOT_FOUND));
         log.info("Hotel with id: {} has been found",hotel.getId());
         return  mapper.toHotelResponse(hotel);
     }
@@ -58,7 +58,7 @@ public class HotelServiceImpl implements  HotelService {
         log.info("Updating hotel with id: {}",id);
         Hotel hotel = hotelRepository
                 .findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException(HotelNotFound));
+                .orElseThrow(()-> new ResourceNotFoundException(HOTEL_NOT_FOUND));
         hotel.setName(request.getName());
         hotel.setCity(request.getCity());
         hotel.setPhotos(request.getPhotos());
@@ -84,9 +84,9 @@ public class HotelServiceImpl implements  HotelService {
 
     @Transactional
     @Override
-    public Boolean activeHotelById(Long id) {
+    public Boolean activateHotelById(Long id) {
         log.info("Activating hotel with id: {}",id);
-        Hotel hotel = hotelRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException(HotelNotFound));
+        Hotel hotel = hotelRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException(HOTEL_NOT_FOUND));
         hotel.setActive(true);
         hotelRepository.save(hotel);
         log.info("Activated hotel with id: {}",id);
@@ -95,9 +95,9 @@ public class HotelServiceImpl implements  HotelService {
 
     @Transactional
     @Override
-    public Boolean deactiveHotelById(Long id) {
+    public Boolean deactivateHotelById(Long id) {
         log.info("Deactivating hotel with id: {}",id);
-        Hotel hotel = hotelRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException(HotelNotFound));
+        Hotel hotel = hotelRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException(HOTEL_NOT_FOUND));
         hotel.setActive(false);
         hotelRepository.save(hotel);
         log.info("Deactivated hotel with id: {}",id);
@@ -106,19 +106,14 @@ public class HotelServiceImpl implements  HotelService {
 
     @Transactional
     @Override
-    public HotelResponse editHotelDetailsById(Long id, Map<String, Object> request) {
-        Hotel hotel = hotelRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(HotelNotFound));
-        request.forEach((field,value) ->{
-            Field fields = ReflectionUtils.findField(Hotel.class,field);
-            assert fields != null;
-            fields.setAccessible(true);
-            ReflectionUtils.setField(fields,hotel,value);
-        });
+    public HotelResponse editHotelDetailsById(Long id, Map<String, Object> updates) {
+        Hotel hotel = hotelRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(HOTEL_NOT_FOUND));
+        objectMapper.updateValue(hotel, updates);
         return mapper.toHotelResponse(hotelRepository.save(hotel));
     }
 
     void isExist(Long id){
         log.info("Checking if hotel with id: {} exists",id);
-        if(!hotelRepository.existsById(id)) throw new ResourceNotFoundException(HotelNotFound);
+        if(!hotelRepository.existsById(id)) throw new ResourceNotFoundException(HOTEL_NOT_FOUND);
     }
 }

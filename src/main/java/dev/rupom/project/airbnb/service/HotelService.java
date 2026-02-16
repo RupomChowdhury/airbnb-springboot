@@ -12,7 +12,7 @@ public interface HotelService {
     List<HotelResponse> getAllHotels();
     HotelResponse updateHotelById(Long id, HotelRequest request);
     Boolean deleteHotelById(Long id);
-    Boolean activeHotelById(Long id);
-    Boolean deactiveHotelById(Long id);
-    HotelResponse editHotelDetailsById(Long id, Map<String,Object> fields);
+    Boolean activateHotelById(Long id);
+    Boolean deactivateHotelById(Long id);
+    HotelResponse editHotelDetailsById(Long id, Map<String,Object> updates);
 }

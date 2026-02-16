@@ -46,14 +46,14 @@ public class HotelController {
     }
     @PatchMapping(path = "activate/{id}")
     public ResponseEntity<Boolean> activeHotelById(@PathVariable Long id){
-        return ResponseEntity.ok(hotelService.activeHotelById(id));
+        return ResponseEntity.ok(hotelService.activateHotelById(id));
     }
     @PatchMapping(path = "/deactivate/{id}")
     public ResponseEntity<Boolean> deactivateHotelById(@PathVariable Long id){
-        return ResponseEntity.ok(hotelService.deactiveHotelById(id));
+        return ResponseEntity.ok(hotelService.deactivateHotelById(id));
     }
     @PatchMapping(path = "/{id}")
-    public ResponseEntity<HotelResponse> editHotelById(@PathVariable Long id, @RequestBody Map<String,Object> request){
-        return ResponseEntity.ok(hotelService.editHotelDetailsById(id, request));
+    public ResponseEntity<HotelResponse> editHotelById(@PathVariable Long id, @RequestBody Map<String,Object> updates){
+        return ResponseEntity.ok(hotelService.editHotelDetailsById(id, updates));
     }
 }
