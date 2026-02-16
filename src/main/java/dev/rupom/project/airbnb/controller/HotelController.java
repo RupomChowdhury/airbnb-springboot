@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/hotels")
@@ -42,5 +43,17 @@ public class HotelController {
     public ResponseEntity<Boolean> deleteHotelById(@PathVariable Long id){
         log.info("Attempting to delete hotel with id: {}",id);
         return ResponseEntity.ok(hotelService.deleteHotelById(id));
+    }
+    @PatchMapping(path = "activate/{id}")
+    public ResponseEntity<Boolean> activeHotelById(@PathVariable Long id){
+        return ResponseEntity.ok(hotelService.activeHotelById(id));
+    }
+    @PatchMapping(path = "/deactivate/{id}")
+    public ResponseEntity<Boolean> deactivateHotelById(@PathVariable Long id){
+        return ResponseEntity.ok(hotelService.deactiveHotelById(id));
+    }
+    @PatchMapping(path = "/{id}")
+    public ResponseEntity<HotelResponse> editHotelById(@PathVariable Long id, @RequestBody Map<String,Object> request){
+        return ResponseEntity.ok(hotelService.editHotelDetailsById(id, request));
     }
 }
