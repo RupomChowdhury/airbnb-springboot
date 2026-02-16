@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RoomDTO {
+public class RoomResponse {
     private Long id;
     private String type;
     private BigDecimal basePrice;

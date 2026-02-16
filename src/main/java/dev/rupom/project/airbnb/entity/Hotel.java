@@ -43,7 +43,7 @@ public class Hotel {
     @Embedded
     private ContactInfo contactInfo;
 
-    @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Room> rooms = new ArrayList<>();
     @OneToMany(mappedBy = "hotel", fetch = FetchType.LAZY)
     private List<Inventory> inventories = new ArrayList<>();

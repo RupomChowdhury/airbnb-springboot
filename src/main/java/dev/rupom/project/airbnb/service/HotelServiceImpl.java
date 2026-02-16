@@ -87,9 +87,13 @@ public class HotelServiceImpl implements  HotelService {
     public Boolean activateHotelById(Long id) {
         log.info("Activating hotel with id: {}",id);
         Hotel hotel = hotelRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException(HOTEL_NOT_FOUND));
+        if(Boolean.TRUE.equals(hotel.getActive())){
+            return true;
+        }
         hotel.setActive(true);
         hotelRepository.save(hotel);
         log.info("Activated hotel with id: {}",id);
+        //TODO: Create inventory for all the rooms of this hotel.
         return true;
     }
 
@@ -107,8 +111,10 @@ public class HotelServiceImpl implements  HotelService {
     @Transactional
     @Override
     public HotelResponse editHotelDetailsById(Long id, Map<String, Object> updates) {
+        log.info("Editing hotel with id: {}",id);
         Hotel hotel = hotelRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(HOTEL_NOT_FOUND));
         objectMapper.updateValue(hotel, updates);
+        log.info("Edited hotel with id: {}",id);
         return mapper.toHotelResponse(hotelRepository.save(hotel));
     }
 
