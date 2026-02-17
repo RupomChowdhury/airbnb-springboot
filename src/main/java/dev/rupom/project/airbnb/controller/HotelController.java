@@ -3,6 +3,7 @@ package dev.rupom.project.airbnb.controller;
 import dev.rupom.project.airbnb.dto.HotelRequest;
 import dev.rupom.project.airbnb.dto.HotelResponse;
 import dev.rupom.project.airbnb.service.HotelService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ public class HotelController {
     private final HotelService hotelService;
 
     @PostMapping
-    public ResponseEntity<HotelResponse> createNewHotel(@RequestBody HotelRequest request){
+    public ResponseEntity<HotelResponse> createNewHotel(@RequestBody @Valid HotelRequest request){
         log.info("Attempting to create a new hotel with name: {}",request.getName());
         HotelResponse hotelResponse = hotelService.createNewHotel(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(hotelResponse);
