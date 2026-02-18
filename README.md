@@ -84,7 +84,7 @@ The application is built on a relational database model designed for scalability
 ### Run Locally
 1.  **Clone the repo**
     ```bash
-    git clone https://github.com/RupomChowdhury/airbnb-clone.git
+    git clone https://github.com/RupomChowdhury/airbnb-springboot.git
     ```
 2.  **Configure Database**
     Update `src/main/resources/application.properties` with your PostgreSQL credentials.
