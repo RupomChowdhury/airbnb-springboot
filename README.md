@@ -1,4 +1,4 @@
-# 🏨 AirBNB Clone (Spring Boot)
+# AirBNB Clone (Spring Boot)
 
 ![Java](https://img.shields.io/badge/Java-25-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.0.2-green)
