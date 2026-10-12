@@ -1,11 +1,6 @@
 package dev.rupom.project.airbnb.dto;
 
-import dev.rupom.project.airbnb.entity.Hotel;
-import dev.rupom.project.airbnb.entity.Room;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,10 +10,11 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class InventoryResponse {
     private Long id;
-    private Hotel hotel;
-    private Room room;
+    private Long hotelId;
+    private Long roomId;
     private LocalDate date;
     private Integer bookedCount;
     private Integer totalCount;

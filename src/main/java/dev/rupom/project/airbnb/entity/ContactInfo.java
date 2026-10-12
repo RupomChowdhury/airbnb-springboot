@@ -1,11 +1,13 @@
 package dev.rupom.project.airbnb.entity;
 
 import jakarta.persistence.Embeddable;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Embeddable
 public class ContactInfo {
     private String completeAddress;

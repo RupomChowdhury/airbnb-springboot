@@ -1,0 +1,235 @@
+### ==============================================================================
+### Airbnb Backend API - Comprehensive HTTP Client Test Suite
+### Compatible with IntelliJ IDEA HTTP Client & VS Code REST Client extension
+### ==============================================================================
+
+@baseUrl = http://localhost:8080/api/v1
+
+### ------------------------------------------------------------------------------
+### 1. Observability & Actuator Health Checks
+### ------------------------------------------------------------------------------
+
+### 1.1 Actuator Health Status (DB, Redis, Disk space)
+GET {{baseUrl}}/actuator/health
+Accept: application/json
+
+### 1.2 Actuator Info
+GET {{baseUrl}}/actuator/info
+Accept: application/json
+
+### 1.3 Actuator Metrics
+GET {{baseUrl}}/actuator/metrics
+Accept: application/json
+
+
+### ------------------------------------------------------------------------------
+### 2. Authentication & Authorization (Pre-Seeded Accounts)
+### ------------------------------------------------------------------------------
+
+### 2.1 Login as Guest (John Doe)
+# @name loginGuest
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "guest@airbnb.com",
+  "password": "guest123"
+}
+
+### Capture Guest JWT Token
+@guestToken = {{loginGuest.response.body.token}}
+
+### 2.2 Login as Host (Elena Rostova - Superhost)
+# @name loginHost
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "host@airbnb.com",
+  "password": "host123"
+}
+
+### Capture Host JWT Token
+@hostToken = {{loginHost.response.body.token}}
+
+### 2.3 Login as Admin (System Administrator)
+# @name loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@airbnb.com",
+  "password": "admin123"
+}
+
+### Capture Admin JWT Token
+@adminToken = {{loginAdmin.response.body.token}}
+
+
+### ------------------------------------------------------------------------------
+### 3. Hotel Browsing, Search & Geospatial Radius Queries
+### ------------------------------------------------------------------------------
+
+### 3.1 Fetch All Active Hotels (Cached via Redis)
+GET {{baseUrl}}/hotels
+Accept: application/json
+
+### 3.2 Search Hotels by City & Date Range
+POST {{baseUrl}}/hotels/search
+Content-Type: application/json
+
+{
+  "city": "Paris",
+  "startDate": "2026-11-01",
+  "endDate": "2026-11-05",
+  "roomsCount": 1,
+  "page": 0,
+  "size": 10
+}
+
+### 3.3 Geospatial Haversine Radius Search (Within 15km of Eiffel Tower)
+POST {{baseUrl}}/hotels/search
+Content-Type: application/json
+
+{
+  "latitude": 48.8584,
+  "longitude": 2.2945,
+  "radiusKm": 15.0,
+  "page": 0,
+  "size": 10
+}
+
+### 3.4 Viewport Bounding Box Map Search (Paris Metro Area)
+POST {{baseUrl}}/hotels/search
+Content-Type: application/json
+
+{
+  "minLatitude": 48.8000,
+  "maxLatitude": 48.9000,
+  "minLongitude": 2.2000,
+  "maxLongitude": 2.4000,
+  "page": 0,
+  "size": 10
+}
+
+### 3.5 Fetch Hotel Rating Summary & Guest Favorite Badge
+GET {{baseUrl}}/reviews/hotel/1/summary
+Accept: application/json
+
+
+### ------------------------------------------------------------------------------
+### 4. Dynamic Pricing Calculation
+### ------------------------------------------------------------------------------
+
+### 4.1 Calculate Itemized Price Quote (Weekly Discount + Cleaning + Tax)
+GET {{baseUrl}}/hotels/1/calculate-price?checkInDate=2026-11-01&checkOutDate=2026-11-08&roomsCount=1
+Accept: application/json
+
+
+### ------------------------------------------------------------------------------
+### 5. Booking Workflow (15-Minute Reservation Hold)
+### ------------------------------------------------------------------------------
+
+### 5.1 Initiate Booking Hold (Pessimistic Lock & 15-min Expire Hold)
+# @name initiateBooking
+POST {{baseUrl}}/bookings/initiate
+Authorization: Bearer {{guestToken}}
+Content-Type: application/json
+
+{
+  "hotelId": 1,
+  "roomId": 1,
+  "checkInDate": "2026-11-10",
+  "checkOutDate": "2026-11-14",
+  "roomsCount": 1,
+  "guests": [
+    {
+      "name": "John Doe",
+      "gender": "MALE",
+      "age": 30
+    }
+  ]
+}
+
+### Capture Created Booking ID & Total Price
+@bookingId = {{initiateBooking.response.body.id}}
+@totalPrice = {{initiateBooking.response.body.totalPrice}}
+
+
+### ------------------------------------------------------------------------------
+### 6. Payment Processing with Idempotency Key
+### ------------------------------------------------------------------------------
+
+### 6.1 Process Payment (Confirm Booking, Release Hold, Schedule Escrow Payout)
+# @name processPayment
+POST {{baseUrl}}/payments/process
+Authorization: Bearer {{guestToken}}
+Idempotency-Key: b3b171bf-5b23-42e7-8b01-8b21c4355a2a
+Content-Type: application/json
+
+{
+  "bookingId": {{bookingId}},
+  "amount": {{totalPrice}},
+  "paymentMethod": "CREDIT_CARD"
+}
+
+### 6.2 Test Idempotency: Re-send with Same Idempotency-Key (Returns Cached Result Instantly)
+POST {{baseUrl}}/payments/process
+Authorization: Bearer {{guestToken}}
+Idempotency-Key: b3b171bf-5b23-42e7-8b01-8b21c4355a2a
+Content-Type: application/json
+
+{
+  "bookingId": {{bookingId}},
+  "amount": {{totalPrice}},
+  "paymentMethod": "CREDIT_CARD"
+}
+
+
+### ------------------------------------------------------------------------------
+### 7. Verified Reviews & Ratings
+### ------------------------------------------------------------------------------
+
+### 7.1 Fetch Paginated Reviews for Listing
+GET {{baseUrl}}/reviews/hotel/1?page=0&size=10
+Accept: application/json
+
+
+### ------------------------------------------------------------------------------
+### 8. Host Escrow Payouts & Administration
+### ------------------------------------------------------------------------------
+
+### 8.1 Admin: View All Escrow Host Payouts
+GET {{baseUrl}}/admin/payouts
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### 8.2 Admin: Trigger Daily Escrow Payout Release Sweep
+POST {{baseUrl}}/admin/payouts/process-releases
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### 8.3 Admin: Trigger Manual Sweep of Stale 15-Minute Reservation Holds
+POST {{baseUrl}}/admin/bookings/expire-holds
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+
+### ------------------------------------------------------------------------------
+### 9. Threaded Guest-Host Messaging
+### ------------------------------------------------------------------------------
+
+### 9.1 Send Message from Guest to Host (Dispatches Kafka Event + WebSocket push)
+POST {{baseUrl}}/messages/send
+Authorization: Bearer {{guestToken}}
+Content-Type: application/json
+
+{
+  "bookingId": 1,
+  "content": "Hi Elena! What is the WiFi password and check-in procedure?"
+}
+
+### 9.2 Fetch User Conversations
+GET {{baseUrl}}/messages/conversations
+Authorization: Bearer {{guestToken}}
+Accept: application/json

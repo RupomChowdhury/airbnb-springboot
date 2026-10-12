@@ -1,0 +1,439 @@
+{
+  "info": {
+    "name": "Airbnb Clone Enterprise API",
+    "description": "Production-grade Postman collection for the Spring Boot Airbnb backend with automated token capture, Kafka EDA, Redis caching, payment idempotency, and actuator probes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "guestToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "hostToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bookingId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Observability & Actuator",
+      "item": [
+        {
+          "name": "Health Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "health"]
+            }
+          }
+        },
+        {
+          "name": "Application Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/info",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "info"]
+            }
+          }
+        },
+        {
+          "name": "Application Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/metrics",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "metrics"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication",
+      "item": [
+        {
+          "name": "Login as Guest",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('guestToken', jsonData.token);",
+                  "    console.log('Guest token captured: ' + jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"guest@airbnb.com\",\n  \"password\": \"guest123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login as Host",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('hostToken', jsonData.token);",
+                  "    console.log('Host token captured: ' + jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"host@airbnb.com\",\n  \"password\": \"host123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('adminToken', jsonData.token);",
+                  "    console.log('Admin token captured: ' + jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@airbnb.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Hotels & Geospatial Search",
+      "item": [
+        {
+          "name": "List All Active Hotels (Redis Cached)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hotels",
+              "host": ["{{baseUrl}}"],
+              "path": ["hotels"]
+            }
+          }
+        },
+        {
+          "name": "Search by City (Paris)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"city\": \"Paris\",\n  \"startDate\": \"2026-11-01\",\n  \"endDate\": \"2026-11-05\",\n  \"roomsCount\": 1,\n  \"page\": 0,\n  \"size\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/hotels/search",
+              "host": ["{{baseUrl}}"],
+              "path": ["hotels", "search"]
+            }
+          }
+        },
+        {
+          "name": "Geospatial Radius Search (15km of Eiffel Tower)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 48.8584,\n  \"longitude\": 2.2945,\n  \"radiusKm\": 15.0,\n  \"page\": 0,\n  \"size\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/hotels/search",
+              "host": ["{{baseUrl}}"],
+              "path": ["hotels", "search"]
+            }
+          }
+        },
+        {
+          "name": "Viewport Bounding Box Map Search",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"minLatitude\": 48.8000,\n  \"maxLatitude\": 48.9000,\n  \"minLongitude\": 2.2000,\n  \"maxLongitude\": 2.4000,\n  \"page\": 0,\n  \"size\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/hotels/search",
+              "host": ["{{baseUrl}}"],
+              "path": ["hotels", "search"]
+            }
+          }
+        },
+        {
+          "name": "Hotel Rating Summary & Guest Favorite",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/hotel/1/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews", "hotel", "1", "summary"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Bookings & Payments",
+      "item": [
+        {
+          "name": "Calculate Price Quote",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/hotels/1/calculate-price?checkInDate=2026-11-01&checkOutDate=2026-11-08&roomsCount=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["hotels", "1", "calculate-price"],
+              "query": [
+                { "key": "checkInDate", "value": "2026-11-01" },
+                { "key": "checkOutDate", "value": "2026-11-08" },
+                { "key": "roomsCount", "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Initiate Booking (15-min Hold)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set('bookingId', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{guestToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hotelId\": 1,\n  \"roomId\": 1,\n  \"checkInDate\": \"2026-11-10\",\n  \"checkOutDate\": \"2026-11-14\",\n  \"roomsCount\": 1,\n  \"guests\": [\n    {\n      \"name\": \"John Doe\",\n      \"gender\": \"MALE\",\n      \"age\": 30\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings/initiate",
+              "host": ["{{baseUrl}}"],
+              "path": ["bookings", "initiate"]
+            }
+          }
+        },
+        {
+          "name": "Process Payment (with Idempotency Key)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{guestToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "b3b171bf-5b23-42e7-8b01-8b21c4355a2a" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": {{bookingId}},\n  \"amount\": 1280.00,\n  \"paymentMethod\": \"CREDIT_CARD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments/process",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "process"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Messaging & Real-Time Chat",
+      "item": [
+        {
+          "name": "Send Message",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{guestToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": 1,\n  \"content\": \"Hi Elena! Looking forward to my stay. Is early check-in possible?\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/messages/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["messages", "send"]
+            }
+          }
+        },
+        {
+          "name": "Get User Conversations",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{guestToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/messages/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["messages", "conversations"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Administration & Payouts",
+      "item": [
+        {
+          "name": "Admin: View Escrow Payouts",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payouts",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "payouts"]
+            }
+          }
+        },
+        {
+          "name": "Admin: Sweep Stale Reservation Holds",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/bookings/expire-holds",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "bookings", "expire-holds"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

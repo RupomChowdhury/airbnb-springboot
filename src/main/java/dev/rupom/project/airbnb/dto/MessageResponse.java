@@ -1,0 +1,20 @@
+package dev.rupom.project.airbnb.dto;
+
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class MessageResponse {
+    private Long id;
+    private Long conversationId;
+    private Long senderId;
+    private String senderName;
+    private String content;
+    private Boolean isRead;
+    private LocalDateTime createdAt;
+}

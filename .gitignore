@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Planning artifacts
+implementation_plan.md
+

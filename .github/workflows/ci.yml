@@ -1,0 +1,70 @@
+name: Airbnb Backend CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    name: Build, Test & Package (Java 25)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: AirBNB
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Grant Execute Permission to Maven Wrapper
+        run: chmod +x mvnw
+
+      - name: Run Full Automated Test Suite
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/AirBNB
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: password123
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+        run: ./mvnw test
+
+      - name: Build Deployable Spring Boot Executable JAR
+        run: ./mvnw clean package -DskipTests
+
+      - name: Archive Production JAR Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: airbnb-backend-release
+          path: target/*.jar
+          retention-days: 7

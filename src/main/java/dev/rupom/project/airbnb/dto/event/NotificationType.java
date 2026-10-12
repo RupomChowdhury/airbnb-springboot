@@ -1,0 +1,14 @@
+package dev.rupom.project.airbnb.dto.event;
+
+public enum NotificationType {
+    BOOKING_CREATED,
+    BOOKING_REQUESTED,
+    BOOKING_ACCEPTED,
+    BOOKING_DECLINED,
+    BOOKING_CONFIRMED,
+    BOOKING_CANCELLED,
+    BOOKING_EXPIRED,
+    PAYMENT_RECEIPT,
+    PAYOUT_RELEASED,
+    DIRECT_MESSAGE
+}
